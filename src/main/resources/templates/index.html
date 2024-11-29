@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Notifier</title>
+
+    <style>
+        .showDiv{
+            display: block;
+        }
+        .hideDiv{
+            display: none;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="outerContainer" style="position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);display: flex; flex-direction: column;">
+      <button id="joinBtn" style="cursor:pointer">I am ready for the hunt. Bring it on!</button>
+      <div class="notifyEnableContainer hideDiv">
+          <form>
+              <div>
+                  <div>
+                      <label for="joinUserEmail">Type your email to join the hunt</label>
+                  </div>
+                  <div>
+                      <input type="email" id="joinUserEmail"/>
+                  </div>
+              </div>
+              <div>
+                  <div>
+                      <label for="userKeywords">Provide keywords to be matched in job title (comma separated)</label>
+                  </div>
+                  <div>
+                      <input type="text" id="userKeywords"/>
+                  </div>
+              </div>
+              <input type="submit"/>
+          </form>
+      </div>
+      <button id="cancelBtn" style="cursor:pointer">I got the offer. Leave me alone now please!</button>
+      <div class="notifyDisableContainer hideDiv">
+          <form>
+              <div>
+                  <div>
+                      <label for="leaveUserEmail">Type your email to leave the hunt</label>
+                  </div>
+                  <div>
+                      <input type="email" id="leaveUserEmail"/>
+                  </div>
+              </div>
+              <input type="submit"/>
+          </form>
+      </div>
+    </div>
+
+
+    <script>
+        document.getElementById("joinBtn").addEventListener("click",()=>{
+            document.querySelector(".notifyDisableContainer").classList.add("hideDiv");
+            document.querySelector(".notifyEnableContainer").classList.add("showDiv");
+            document.querySelector(".notifyEnableContainer").classList.remove("hideDiv");
+        });
+
+        document.getElementById("cancelBtn").addEventListener("click",()=>{
+            document.querySelector(".notifyEnableContainer").classList.add("hideDiv");
+            document.querySelector(".notifyDisableContainer").classList.add("showDiv");
+            document.querySelector(".notifyDisableContainer").classList.remove("hideDiv");
+        });
+    </script>
+
+</body>
+</html>
