@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="https://www.thymeleaf.org/">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,13 +22,13 @@
   transform: translate(-50%, -50%);display: flex; flex-direction: column;">
       <button id="joinBtn" style="cursor:pointer">I am ready for the hunt. Bring it on!</button>
       <div class="notifyEnableContainer hideDiv">
-          <form>
+          <form th:action="@{/savejobnotifierentry}" method="POST">
               <div>
                   <div>
                       <label for="joinUserEmail">Type your email to join the hunt</label>
                   </div>
                   <div>
-                      <input type="email" id="joinUserEmail"/>
+                      <input th:name="userEmail" type="email" id="joinUserEmail"/>
                   </div>
               </div>
               <div>
@@ -36,7 +36,7 @@
                       <label for="userKeywords">Provide keywords to be matched in job title (comma separated)</label>
                   </div>
                   <div>
-                      <input type="text" id="userKeywords"/>
+                      <input th:name="userKeywords" type="text" id="userKeywords"/>
                   </div>
               </div>
               <input type="submit"/>

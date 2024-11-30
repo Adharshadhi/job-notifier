@@ -1,5 +1,9 @@
 package com.example.jobnotifier.service;
 
+import com.example.jobnotifier.dao.JobNotifierDao;
+import com.example.jobnotifier.model.JobKeyword;
+import com.example.jobnotifier.model.JobNotifierEntry;
+import jakarta.transaction.Transactional;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +19,7 @@ import java.util.List;
 @Service
 public class JobNotifierService {
 
+    private final JobNotifierDao jobNotifierDao;
     private final JavaMailSender javaMailSender;
 
     private final String url;
@@ -31,12 +36,14 @@ public class JobNotifierService {
 
     public JobNotifierService(JavaMailSender javaMailSender,
                               @Value("${technopark.api.url}") String url,
-                              RestTemplate restTemplate
+                              RestTemplate restTemplate,
+                              JobNotifierDao jobNotifierDao
                               )
     {
         this.javaMailSender = javaMailSender;
         this.url = url;
         this.restTemplate = restTemplate;
+        this.jobNotifierDao = jobNotifierDao;
     }
 
     public void fetchJobs() {
@@ -85,6 +92,23 @@ public class JobNotifierService {
         }
 
         return mailText.toString();
+    }
+
+    @Transactional
+    public boolean saveJobNotifierEntry(String userEmail, String userKeywords){
+        String[] keywordsArr = userKeywords.split(",");
+        JobNotifierEntry jobNotifierEntry = new JobNotifierEntry();
+        jobNotifierEntry.setEmail(userEmail);
+        List<JobKeyword> jobKeywordList = new ArrayList<>();
+        for(String keyword : keywordsArr){
+            JobKeyword jobKeyword = new JobKeyword();
+            jobKeyword.setKeyword(keyword.trim());
+            jobKeyword.setJobNotifierEntry(jobNotifierEntry);
+            jobKeywordList.add(jobKeyword);
+        }
+        jobNotifierEntry.setKeywords(jobKeywordList);
+        jobNotifierDao.saveJobNotifierEntry(jobNotifierEntry);
+        return true;
     }
 
 }
