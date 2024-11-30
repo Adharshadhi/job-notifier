@@ -27,4 +27,10 @@ public class JobNotifierController {
         return "redirect:/";
     }
 
+    @PostMapping("/deletejobnotifierentry")
+    public String deleteJobNotifierEntry(@RequestParam("userEmail") String userEmail){
+        jobNotifierService.deleteJobNotifierEntry(userEmail);
+        return "redirect:/";
+    }
+
 }

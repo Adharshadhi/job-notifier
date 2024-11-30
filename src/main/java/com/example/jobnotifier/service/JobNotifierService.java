@@ -111,4 +111,10 @@ public class JobNotifierService {
         return true;
     }
 
+    @Transactional
+    public boolean deleteJobNotifierEntry(String userEmail){
+        jobNotifierDao.deleteJobNotifierEntry(userEmail);
+        return true;
+    }
+
 }

@@ -1,77 +1,145 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org/">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Notifier</title>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Job Notifier</title>
+        <link th:href="@{/css/style.css}" rel="stylesheet">
+    </head>
+    <body>
+        <div class="outerContainer">
+            <div>
+                <img class="jobBgImg" src="/images/job_background.jpg" alt="job_background_image">
+            </div>
+            <div class="contentContainer">
+                <div class="headerContainer applyCentreFlex">
+                    <h1 class="margin0Px">Technopark Job Alerts</h1>
+                    <p class="margin5Px">Register your email to get notifications whenever new jobs are posted!</p>
+                </div>
+                <button id="joinBtn" class="marginBottom20Px">I am ready. Count me in</button>
+                <button id="unSubBtn">I got the offer. Opt me out</button>
+                <div>
+                    <p class="errMessage"></p>
+                </div>
+                <div class="notifyEnableContainer hideDiv">
+                    <form th:action="@{/savejobnotifierentry}" method="POST" onsubmit="return validateNotifyEnableFields();">
+                        <div>
+                            <div class="paddingBottom10Px">
+                                <label for="joinUserEmail">Type your email to join <span class="mandatoryMark">*</span></label>
+                            </div>
+                            <div>
+                                <input th:name="userEmail" type="text" id="joinUserEmail" onclick="clearErrMessage();"/>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="paddingBottom10Px">
+                                <label for="userKeywords">Provide keywords to be matched in job title (comma separated) <span class="mandatoryMark">*</span></label>
+                            </div>
+                            <div>
+                                <input th:name="userKeywords" type="text" id="userKeywords" onclick="clearErrMessage();"/>
+                            </div>
+                        </div>
+                        <div class="btnContainer">
+                            <button type="button" class="cancelBtnOne">Cancel</button>
+                            <input type="submit"/>
+                        </div>
+                    </form>
+                </div>
+                <div class="notifyDisableContainer hideDiv">
+                    <form th:action="@{/deletejobnotifierentry}" method="POST" onsubmit="return validateNotifyDisableFields();">
+                        <div>
+                            <div class="paddingBottom10Px">
+                                <label for="leaveUserEmail">Type your email to unsubscribe <span class="mandatoryMark">*</span></label>
+                            </div>
+                            <div>
+                                <input th:name="userEmail" type="text" id="leaveUserEmail" onclick="clearErrMessage();"/>
+                            </div>
+                        </div>
+                        <div class="btnContainer">
+                            <button type="button" class="cancelBtnTwo">Cancel</button>
+                            <input type="submit"/>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-    <style>
-        .showDiv{
-            display: block;
-        }
-        .hideDiv{
-            display: none;
-        }
-    </style>
+        <script>
+            document.getElementById("joinBtn").addEventListener("click",()=>{
+                clearErrMessage();
+                document.querySelector(".notifyDisableContainer").classList.add("hideDiv");
+                document.querySelector(".notifyEnableContainer").classList.add("showDiv");
+                document.querySelector(".notifyEnableContainer").classList.remove("hideDiv");
+            });
+            document.getElementById("unSubBtn").addEventListener("click",()=>{
+                clearErrMessage();
+                document.querySelector(".notifyEnableContainer").classList.add("hideDiv");
+                document.querySelector(".notifyDisableContainer").classList.add("showDiv");
+                document.querySelector(".notifyDisableContainer").classList.remove("hideDiv");
+            });
+            document.querySelector(".cancelBtnOne").addEventListener("click",()=>{
+                clearErrMessage();
+                document.querySelector(".notifyEnableContainer").classList.add("hideDiv");
+                document.querySelector(".notifyDisableContainer").classList.add("hideDiv");
+            });
+            document.querySelector(".cancelBtnTwo").addEventListener("click",()=>{
+                clearErrMessage();
+                document.querySelector(".notifyEnableContainer").classList.add("hideDiv");
+                document.querySelector(".notifyDisableContainer").classList.add("hideDiv");
+            });
 
-</head>
-<body>
-    <div class="outerContainer" style="position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);display: flex; flex-direction: column;">
-      <button id="joinBtn" style="cursor:pointer">I am ready for the hunt. Bring it on!</button>
-      <div class="notifyEnableContainer hideDiv">
-          <form th:action="@{/savejobnotifierentry}" method="POST">
-              <div>
-                  <div>
-                      <label for="joinUserEmail">Type your email to join the hunt</label>
-                  </div>
-                  <div>
-                      <input th:name="userEmail" type="email" id="joinUserEmail"/>
-                  </div>
-              </div>
-              <div>
-                  <div>
-                      <label for="userKeywords">Provide keywords to be matched in job title (comma separated)</label>
-                  </div>
-                  <div>
-                      <input th:name="userKeywords" type="text" id="userKeywords"/>
-                  </div>
-              </div>
-              <input type="submit"/>
-          </form>
-      </div>
-      <button id="cancelBtn" style="cursor:pointer">I got the offer. Leave me alone now please!</button>
-      <div class="notifyDisableContainer hideDiv">
-          <form>
-              <div>
-                  <div>
-                      <label for="leaveUserEmail">Type your email to leave the hunt</label>
-                  </div>
-                  <div>
-                      <input type="email" id="leaveUserEmail"/>
-                  </div>
-              </div>
-              <input type="submit"/>
-          </form>
-      </div>
-    </div>
+            function clearErrMessage(){
+                document.querySelectorAll(".errMessage").forEach(el => el.textContent = '');
+            }
 
+            function validateEmailRegex(email){
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                return emailRegex.test(email);
+            }
 
-    <script>
-        document.getElementById("joinBtn").addEventListener("click",()=>{
-            document.querySelector(".notifyDisableContainer").classList.add("hideDiv");
-            document.querySelector(".notifyEnableContainer").classList.add("showDiv");
-            document.querySelector(".notifyEnableContainer").classList.remove("hideDiv");
-        });
+            function validateNotifyEnableFields(){
+                clearErrMessage();
+                let errorMsg = document.querySelector(".errMessage");
+                let email = document.getElementById("joinUserEmail").value;
+                let keywords = document.getElementById("userKeywords").value;
+                if(email === null || email === undefined || email.trim() === ""){
+                    errorMsg.textContent = "Email field should not be empty!";
+                    return false;
+                }else if(!validateEmailRegex(email)){
+                    errorMsg.textContent = "Please provide valid email!";
+                    return false;
+                }else if(email.length > 200){
+                    errorMsg.textContent = "Email length limit exceeded!";
+                    return false;
+                }
+                if(keywords === null || keywords === undefined || keywords.trim() === ""){
+                    errorMsg.textContent = "Keywords field should not be empty!";
+                    return false;
+                }else if(keywords.length > 200){
+                    errorMsg.textContent = "Keywords length limit exceeded!";
+                    return false;
+                }
+                return true;
+            }
 
-        document.getElementById("cancelBtn").addEventListener("click",()=>{
-            document.querySelector(".notifyEnableContainer").classList.add("hideDiv");
-            document.querySelector(".notifyDisableContainer").classList.add("showDiv");
-            document.querySelector(".notifyDisableContainer").classList.remove("hideDiv");
-        });
-    </script>
+            function validateNotifyDisableFields(){
+                clearErrMessage();
+                let errorMsg = document.querySelector(".errMessage");
+                let email = document.getElementById("leaveUserEmail").value;
+                if(email === null || email === undefined || email.trim() === ""){
+                    errorMsg.textContent = "Email field should not be empty!";
+                    return false;
+                }else if(!validateEmailRegex(email)){
+                    errorMsg.textContent = "Please provide valid email!";
+                    return false;
+                }else if(email.length > 200){
+                    errorMsg.textContent = "Email length limit exceeded!";
+                    return false;
+                }
+                return true;
+            }
 
-</body>
+        </script>
+
+    </body>
 </html>
