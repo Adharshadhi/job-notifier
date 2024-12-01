@@ -1,6 +1,8 @@
 package com.example.jobnotifier.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "userkeywords")
@@ -12,10 +14,12 @@ public class JobKeyword {
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "alert_id")
+    @JoinColumn(name = "alert_id", nullable = false)
     private JobNotifierEntry jobNotifierEntry;
 
-    @Column(name = "keyword")
+    @NotBlank(message = "Keyword cannot be blank")
+    @Size(max = 100, message = "Keyword must not exceed 100 characters")
+    @Column(name = "keyword", nullable = false)
     private String keyword;
 
     public int getId() {

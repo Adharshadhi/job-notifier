@@ -1,6 +1,8 @@
 html,
 body {
     height: 100%;
+    margin: 0;
+    padding: 0;
 }
 .outerContainer{
     display: flex;
@@ -181,4 +183,46 @@ form input[type="submit"]:hover {
 }
 .mandatoryMark, .errMessage{
     color: red;
+}
+.errorContainer{
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    background-image: url("/images/error_background.jpg");
+    background-size: contain;
+    background-position: center;
+}
+.errorContainer div{
+    color: #fff;
+    margin-top: 15px;
+}
+.errorContainer h2{
+    font-size: 60px;
+    margin: 0;
+}
+.errorContainer p:nth-of-type(1){
+    font-size: 30px;
+    margin: 0;
+}
+.errorContainer p:nth-of-type(2){
+    font-size: 20px;
+    margin-top: 5px;
+}
+.backBtn{
+    display: inline-block;
+    text-decoration: none;
+    color: #1F509A;
+    background-color: #9EDF9C;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid #cccccc;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+.backBtn:hover {
+    background-color: #88C273;
+    border-color: #b3b3b3;
+    color: #FBFBFB;
 }

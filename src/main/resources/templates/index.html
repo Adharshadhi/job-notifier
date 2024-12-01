@@ -33,7 +33,9 @@
                         </div>
                         <div>
                             <div class="paddingBottom10Px">
-                                <label for="userKeywords">Provide keywords to be matched in job title (comma separated) <span class="mandatoryMark">*</span></label>
+                                <label for="userKeywords">Provide keywords to be matched in job title (comma separated)
+                                    <span class="mandatoryMark">*</span><br><i>(Eg: If you are looking for a Developer role, add Developer as keyword)</i>
+                                </label>
                             </div>
                             <div>
                                 <input th:name="userKeywords" type="text" id="userKeywords" onclick="clearErrMessage();"/>
@@ -63,83 +65,9 @@
                 </div>
             </div>
         </div>
-
-        <script>
-            document.getElementById("joinBtn").addEventListener("click",()=>{
-                clearErrMessage();
-                document.querySelector(".notifyDisableContainer").classList.add("hideDiv");
-                document.querySelector(".notifyEnableContainer").classList.add("showDiv");
-                document.querySelector(".notifyEnableContainer").classList.remove("hideDiv");
-            });
-            document.getElementById("unSubBtn").addEventListener("click",()=>{
-                clearErrMessage();
-                document.querySelector(".notifyEnableContainer").classList.add("hideDiv");
-                document.querySelector(".notifyDisableContainer").classList.add("showDiv");
-                document.querySelector(".notifyDisableContainer").classList.remove("hideDiv");
-            });
-            document.querySelector(".cancelBtnOne").addEventListener("click",()=>{
-                clearErrMessage();
-                document.querySelector(".notifyEnableContainer").classList.add("hideDiv");
-                document.querySelector(".notifyDisableContainer").classList.add("hideDiv");
-            });
-            document.querySelector(".cancelBtnTwo").addEventListener("click",()=>{
-                clearErrMessage();
-                document.querySelector(".notifyEnableContainer").classList.add("hideDiv");
-                document.querySelector(".notifyDisableContainer").classList.add("hideDiv");
-            });
-
-            function clearErrMessage(){
-                document.querySelectorAll(".errMessage").forEach(el => el.textContent = '');
-            }
-
-            function validateEmailRegex(email){
-                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-                return emailRegex.test(email);
-            }
-
-            function validateNotifyEnableFields(){
-                clearErrMessage();
-                let errorMsg = document.querySelector(".errMessage");
-                let email = document.getElementById("joinUserEmail").value;
-                let keywords = document.getElementById("userKeywords").value;
-                if(email === null || email === undefined || email.trim() === ""){
-                    errorMsg.textContent = "Email field should not be empty!";
-                    return false;
-                }else if(!validateEmailRegex(email)){
-                    errorMsg.textContent = "Please provide valid email!";
-                    return false;
-                }else if(email.length > 200){
-                    errorMsg.textContent = "Email length limit exceeded!";
-                    return false;
-                }
-                if(keywords === null || keywords === undefined || keywords.trim() === ""){
-                    errorMsg.textContent = "Keywords field should not be empty!";
-                    return false;
-                }else if(keywords.length > 200){
-                    errorMsg.textContent = "Keywords length limit exceeded!";
-                    return false;
-                }
-                return true;
-            }
-
-            function validateNotifyDisableFields(){
-                clearErrMessage();
-                let errorMsg = document.querySelector(".errMessage");
-                let email = document.getElementById("leaveUserEmail").value;
-                if(email === null || email === undefined || email.trim() === ""){
-                    errorMsg.textContent = "Email field should not be empty!";
-                    return false;
-                }else if(!validateEmailRegex(email)){
-                    errorMsg.textContent = "Please provide valid email!";
-                    return false;
-                }else if(email.length > 200){
-                    errorMsg.textContent = "Email length limit exceeded!";
-                    return false;
-                }
-                return true;
-            }
-
-        </script>
-
+        <footer>
+            Image Credits - <a href="http://www.freepik.com">Designed by Freepik</a>
+        </footer>
+        <script src="/js/script.js" rel="script"></script>
     </body>
 </html>

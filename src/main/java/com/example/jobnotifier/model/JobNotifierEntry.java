@@ -1,6 +1,9 @@
 package com.example.jobnotifier.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -13,7 +16,10 @@ public class JobNotifierEntry {
     @Column(name = "id")
     private int id;
 
-    @Column(name = "email")
+    @NotBlank(message = "Email cannot be blank")
+    @Email(message = "Invalid email format")
+    @Size(max = 200, message = "Email must not exceed 200 characters")
+    @Column(name = "email", nullable = false)
     private String email;
 
     @OneToMany(mappedBy = "jobNotifierEntry", cascade = CascadeType.ALL, orphanRemoval = true)

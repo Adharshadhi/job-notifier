@@ -33,4 +33,8 @@ public class JobNotifierController {
         return "redirect:/";
     }
 
+    @GetMapping("/error")
+    public String showErrorPage(){
+        return "error";
+    }
 }
