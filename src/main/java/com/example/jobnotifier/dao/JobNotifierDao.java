@@ -6,6 +6,8 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public class JobNotifierDao {
 
@@ -23,6 +25,12 @@ public class JobNotifierDao {
         query.setParameter("email", userEmail);
         entityManager.remove(query.getSingleResult());
         return true;
+    }
+
+    public List<JobNotifierEntry> getAllJobNotifierEntry(){
+        String queryToExecute = "SELECT j FROM JobNotifierEntry j";
+        TypedQuery<JobNotifierEntry> query = entityManager.createQuery(queryToExecute, JobNotifierEntry.class);
+        return query.getResultList();
     }
 
 }
