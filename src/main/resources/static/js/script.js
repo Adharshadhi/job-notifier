@@ -23,6 +23,7 @@ document.querySelector(".cancelBtnTwo").addEventListener("click",()=>{
 
 function clearErrMessage(){
     document.querySelectorAll(".errMessage").forEach(el => el.textContent = '');
+    document.querySelectorAll(".genericMsg").forEach(el => el.style.display = 'none');
 }
 
 function validateEmailRegex(email){
@@ -76,3 +77,10 @@ function validateNotifyDisableFields(){
     }
     return true;
 }
+
+setTimeout(() => {
+    const alertMessage = document.querySelector('.genericMsg');
+    if (alertMessage) {
+        alertMessage.style.display = 'none';
+    }
+}, 5000);

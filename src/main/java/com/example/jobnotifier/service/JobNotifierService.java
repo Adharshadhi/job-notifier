@@ -31,14 +31,18 @@ public class JobNotifierService {
             jobKeywordList.add(jobKeyword);
         }
         jobNotifierEntry.setKeywords(jobKeywordList);
-        jobNotifierDao.saveJobNotifierEntry(jobNotifierEntry);
-        return true;
+        return jobNotifierDao.saveJobNotifierEntry(jobNotifierEntry);
     }
 
     @Transactional
     public boolean deleteJobNotifierEntry(String userEmail){
         jobNotifierDao.deleteJobNotifierEntry(userEmail);
         return true;
+    }
+
+    @Transactional
+    public JobNotifierEntry checkExistingEntry(String userEmail){
+        return jobNotifierDao.checkExistingEntry(userEmail);
     }
 
 }

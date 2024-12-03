@@ -25,71 +25,103 @@ public class JobNotifierSchedulerService {
 
     private final String jobListingUrl;
 
-    @Value("${technopark.api.jobapplyurl}")
+    @Value("${jobnotify.api.jobapplyurl}")
     private String jobApplyUrl;
 
     private long jobIdTracker = 0;
 
+    private final String mailSubject;
+
     public JobNotifierSchedulerService(JavaMailSender javaMailSender,
-                                       @Value("${technopark.api.joblistingurl}") String jobListingUrl,
+                                       @Value("${jobnotify.api.joblistingurl}") String jobListingUrl,
                                        RestTemplate restTemplate,
-                                       JobNotifierDao jobNotifierDao)
+                                       JobNotifierDao jobNotifierDao,@Value("${jobnotify.mail.subject}") String mailSubject)
     {
         this.javaMailSender = javaMailSender;
         this.jobListingUrl = jobListingUrl;
         this.restTemplate = restTemplate;
         this.jobNotifierDao = jobNotifierDao;
+        this.mailSubject = mailSubject;
     }
 
     @Transactional
     @Scheduled(fixedRate = 60000)
     public void scheduledTask(){
         System.out.println("**********Started Finding Suitable Jobs***********");
-        fetchJobs();
+        executeJobNotify();
         System.out.println("**********Ended Finding Suitable Jobs*************");
     }
 
-    public void fetchJobs() {
-        StringBuilder stringBuilder = new StringBuilder();
+    private JSONArray fetchJobs(){
         String result = restTemplate.getForObject(jobListingUrl, String.class);
         JSONObject jsonJobObj = new JSONObject(result);
-        JSONArray jsonJobsArr = jsonJobObj.getJSONArray("data");
-        Map<String,String> jobDetailsMap = new LinkedHashMap<>();
-        List<String> keywordsList = new ArrayList<>();
-        List<JobNotifierEntry> jobNotifierEntryList = jobNotifierDao.getAllJobNotifierEntry();
-        for(JobNotifierEntry jobNotifierEntry : jobNotifierEntryList){
-            String userEmail = jobNotifierEntry.getEmail();
-            for(int i=0; i<jobNotifierEntry.getKeywords().size(); i++){
-                keywordsList.add(jobNotifierEntry.getKeywords().get(i).getKeyword());
-            }
-            for(Object obj : jsonJobsArr){
-                JSONObject jsonObject = (JSONObject) obj;
-                long currentJobId = jsonObject.getLong("id");
-                if(currentJobId > jobIdTracker){
-                    String jobTitle = (String) jsonObject.get("job_title");
-                    JSONObject subJsonObj = (JSONObject) jsonObject.get("company");
-                    String companyName = (String) subJsonObj.get("company");
-                    String closingDate = (String) jsonObject.get("closing_date");
-                    String applyLink = jobApplyUrl + currentJobId;
-                    keywordsList.stream()
-                            .filter(keyword -> jobTitle.toLowerCase().contains(keyword.toLowerCase()))
-                            .forEach(keyword -> {
-                                jobDetailsMap.put("Job Title",jobTitle);
-                                jobDetailsMap.put("Company Name",companyName);
-                                jobDetailsMap.put("Closing Date",closingDate);
-                                jobDetailsMap.put("Apply Now => ",applyLink);
-                                stringBuilder.append("*) ").append(prepareMailText(jobDetailsMap)).append("\n");
-                            });
-                }
-            }
-            if(stringBuilder.length()>0){
-                sendSimpleMail(userEmail,"Technopark: New Matching Jobs Posted", stringBuilder.toString());
-            }
-            keywordsList.clear();
-            stringBuilder.setLength(0);
+        return jsonJobObj.getJSONArray("data");
+    }
+
+    private Set<String> processSingleUserKeywords(JobNotifierEntry jobNotifierEntry){
+        Set<String> keywordsList = new HashSet<>();
+        for(int i=0; i<jobNotifierEntry.getKeywords().size(); i++){
+            keywordsList.add(jobNotifierEntry.getKeywords().get(i).getKeyword());
         }
+        return keywordsList;
+    }
+
+    private void processSingleJob(JSONObject currentJob, Set<String> keywordsListToMatch, StringBuilder stringBuilder){
+        String jobTitle = (String) currentJob.get("job_title");
+        String jobTitleLowerCase = jobTitle.toLowerCase();
+        JSONObject subJsonObj = (JSONObject) currentJob.get("company");
+        String companyName = (String) subJsonObj.get("company");
+        String closingDate = (String) currentJob.get("closing_date");
+        String applyLink = jobApplyUrl + currentJob.getLong("id");
+        Map<String,String> jobDetailsMap = new LinkedHashMap<>();
+        keywordsListToMatch.stream()
+                .filter(keyword -> jobTitleLowerCase.contains(keyword.toLowerCase()))
+                .forEach(keyword -> {
+                    jobDetailsMap.put("Job Title",jobTitle);
+                    jobDetailsMap.put("Company Name",companyName);
+                    jobDetailsMap.put("Closing Date",closingDate);
+                    jobDetailsMap.put("Apply Now => ",applyLink);
+                    stringBuilder.append("*) ").append(prepareMailText(jobDetailsMap)).append("\n");
+                });
+    }
+
+    private void processNotifyForEachUser(JobNotifierEntry jobNotifierEntry, JSONArray jsonJobsArr){
+        String userEmail = jobNotifierEntry.getEmail();
+        // using Set to avoid duplicate keywords
+        Set<String> keywordsList = processSingleUserKeywords(jobNotifierEntry);
+        StringBuilder stringBuilder = new StringBuilder();
+        for(Object obj : jsonJobsArr){
+            JSONObject jsonObject = (JSONObject) obj;
+            long currentJobId = jsonObject.getLong("id");
+            if(currentJobId > jobIdTracker){
+                processSingleJob(jsonObject, keywordsList, stringBuilder);
+            }
+        }
+        if(stringBuilder.length()>0){
+            sendSimpleMail(userEmail,mailSubject, stringBuilder.toString());
+        }
+        keywordsList.clear();
+        stringBuilder.setLength(0);
+    }
+
+    private void updateJobTracker(JSONArray jsonJobsArr){
         JSONObject jsonObject = (JSONObject) jsonJobsArr.get(0);
         jobIdTracker = (jobIdTracker != jsonObject.getLong("id")) ? jsonObject.getLong("id") : jobIdTracker;
+    }
+
+    private void executeJobNotify() {
+        // Fetching latest jobs posted in Technopark website using API
+        JSONArray jsonJobsArr = fetchJobs();
+        // Fetching all the registered job notifier details from database
+        List<JobNotifierEntry> jobNotifierEntryList = jobNotifierDao.getAllJobNotifierEntry();
+
+        for(JobNotifierEntry jobNotifierEntry : jobNotifierEntryList){
+            // Process notifying logic for each entry in the database
+            processNotifyForEachUser(jobNotifierEntry,jsonJobsArr);
+        }
+        // updating job tracker to keep track of the latest posted job to avoid sending mail again
+        // needs to implement job tracker id within the database for each user for data consistency
+        updateJobTracker(jsonJobsArr);
     }
 
 

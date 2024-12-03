@@ -12,6 +12,9 @@
                 <img class="jobBgImg" src="/images/job_background.jpg" alt="job_background_image">
             </div>
             <div class="contentContainer">
+                <div th:if="${isSuccess != null}" class="genericMsg" th:classappend="${isSuccess ? 'successMsg' : 'errorMsg'}" role="alert">
+                    <span th:text="${message}"></span>
+                </div>
                 <div class="headerContainer applyCentreFlex">
                     <h1 class="margin0Px">Technopark Job Alerts</h1>
                     <p class="margin5Px">Register your email to get notifications whenever new jobs are posted!</p>
