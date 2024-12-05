@@ -9,7 +9,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the built JAR file into the container
-COPY --from=build /target/JobNotifier-0.0.1-SNAPSHOT app.jar
+COPY --from=build /target/JobNotifier-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose the port the application will run on
 EXPOSE 8080
