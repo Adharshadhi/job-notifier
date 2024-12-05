@@ -22,6 +22,9 @@ public class JobNotifierEntry {
     @Column(name = "email", nullable = false)
     private String email;
 
+    @Column(name = "jobtracker_id", nullable = false)
+    private long jobTrackerId;
+
     @OneToMany(mappedBy = "jobNotifierEntry", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JobKeyword> keywords;
 
@@ -41,6 +44,14 @@ public class JobNotifierEntry {
         this.email = email;
     }
 
+    public long getJobTrackerId() {
+        return jobTrackerId;
+    }
+
+    public void setJobTrackerId(long jobTrackerId) {
+        this.jobTrackerId = jobTrackerId;
+    }
+
     public List<JobKeyword> getKeywords() {
         return keywords;
     }
@@ -54,6 +65,7 @@ public class JobNotifierEntry {
         return "JobNotifierEntry{" +
                 "id=" + id +
                 ", email='" + email + '\'' +
+                ", jobTrackerId='" + jobTrackerId + '\'' +
                 ", keywords=" + keywords +
                 '}';
     }

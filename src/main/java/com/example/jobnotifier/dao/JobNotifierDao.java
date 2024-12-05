@@ -47,4 +47,10 @@ public class JobNotifierDao {
         return (results.size() > 0) ? results.get(0) : null;
     }
 
+    public int checkEmailCount(){
+        String queryToExecute = "SELECT j FROM JobNotifierEntry j";
+        TypedQuery<JobNotifierEntry> query = entityManager.createQuery(queryToExecute, JobNotifierEntry.class);
+        return query.getResultList().size();
+    }
+
 }

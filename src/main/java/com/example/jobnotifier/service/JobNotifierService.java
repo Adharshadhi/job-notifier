@@ -45,4 +45,9 @@ public class JobNotifierService {
         return jobNotifierDao.checkExistingEntry(userEmail);
     }
 
+    @Transactional
+    public int checkEmailCount(){
+        return jobNotifierDao.checkEmailCount();
+    }
+
 }

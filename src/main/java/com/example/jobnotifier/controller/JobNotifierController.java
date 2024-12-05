@@ -2,6 +2,7 @@ package com.example.jobnotifier.controller;
 
 import com.example.jobnotifier.model.JobNotifierEntry;
 import com.example.jobnotifier.service.JobNotifierService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,8 +14,12 @@ public class JobNotifierController {
 
     private final JobNotifierService jobNotifierService;
 
-    public JobNotifierController(JobNotifierService jobNotifierService){
+    private final int maxEmailLimit;
+
+    public JobNotifierController(JobNotifierService jobNotifierService,
+                                 @Value("${jobnotify.mail.maxlimit}") int maxEmailLimit){
         this.jobNotifierService = jobNotifierService;
+        this.maxEmailLimit = maxEmailLimit;
     }
 
     @GetMapping("/")
@@ -28,7 +33,8 @@ public class JobNotifierController {
                                        RedirectAttributes redirectAttributes
                                        ){
         JobNotifierEntry jobNotifierEntry = jobNotifierService.checkExistingEntry(userEmail);
-        if(jobNotifierEntry == null){
+        int currentUsersCount = jobNotifierService.checkEmailCount();
+        if((jobNotifierEntry == null) && (currentUsersCount < maxEmailLimit)){
             boolean isSuccess = jobNotifierService.saveJobNotifierEntry(userEmail,userKeywords);
             String message = (isSuccess) ? "Email registered successfully!" : "Failed to register email. Please try again.";
             redirectAttributes.addFlashAttribute("isSuccess", isSuccess);

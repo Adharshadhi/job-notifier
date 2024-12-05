@@ -2,24 +2,28 @@ package com.example.jobnotifier.service;
 
 import com.example.jobnotifier.dao.JobNotifierDao;
 import com.example.jobnotifier.model.JobNotifierEntry;
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import jakarta.transaction.Transactional;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
 public class JobNotifierSchedulerService {
 
     private final RestTemplate restTemplate;
-
-    private final JavaMailSender javaMailSender;
 
     private final JobNotifierDao jobNotifierDao;
 
@@ -28,20 +32,25 @@ public class JobNotifierSchedulerService {
     @Value("${jobnotify.api.jobapplyurl}")
     private String jobApplyUrl;
 
-    private long jobIdTracker = 0;
-
     private final String mailSubject;
 
-    public JobNotifierSchedulerService(JavaMailSender javaMailSender,
-                                       @Value("${jobnotify.api.joblistingurl}") String jobListingUrl,
+    private final String mailSender;
+
+    private final String SENDGRID_API_KEY;
+
+    public JobNotifierSchedulerService(@Value("${jobnotify.api.joblistingurl}") String jobListingUrl,
                                        RestTemplate restTemplate,
-                                       JobNotifierDao jobNotifierDao,@Value("${jobnotify.mail.subject}") String mailSubject)
+                                       JobNotifierDao jobNotifierDao,
+                                       @Value("${jobnotify.mail.subject}") String mailSubject,
+                                       @Value("${jobnotify.mail.sender}") String mailSender,
+                                       @Value("${SENDGRID_API_KEY}") String SENDGRID_API_KEY)
     {
-        this.javaMailSender = javaMailSender;
         this.jobListingUrl = jobListingUrl;
         this.restTemplate = restTemplate;
         this.jobNotifierDao = jobNotifierDao;
         this.mailSubject = mailSubject;
+        this.mailSender = mailSender;
+        this.SENDGRID_API_KEY = SENDGRID_API_KEY;
     }
 
     @Transactional
@@ -81,7 +90,7 @@ public class JobNotifierSchedulerService {
                     jobDetailsMap.put("Company Name",companyName);
                     jobDetailsMap.put("Closing Date",closingDate);
                     jobDetailsMap.put("Apply Now => ",applyLink);
-                    stringBuilder.append("*) ").append(prepareMailText(jobDetailsMap)).append("\n");
+                    stringBuilder.append("=> ").append(prepareMailText(jobDetailsMap)).append("\n");
                 });
     }
 
@@ -90,23 +99,24 @@ public class JobNotifierSchedulerService {
         // using Set to avoid duplicate keywords
         Set<String> keywordsList = processSingleUserKeywords(jobNotifierEntry);
         StringBuilder stringBuilder = new StringBuilder();
-        for(Object obj : jsonJobsArr){
-            JSONObject jsonObject = (JSONObject) obj;
+
+        // reverse iterating as the JSON response is coming in descending job id order
+        for(int i = jsonJobsArr.length() - 1; i >= 0; i--){
+            JSONObject jsonObject = jsonJobsArr.getJSONObject(i);
             long currentJobId = jsonObject.getLong("id");
-            if(currentJobId > jobIdTracker){
+            if(currentJobId > jobNotifierEntry.getJobTrackerId()){
                 processSingleJob(jsonObject, keywordsList, stringBuilder);
+                // updating job tracker to keep track of the latest posted job to avoid sending mail again for each user
+                jobNotifierEntry.setJobTrackerId(currentJobId);
             }
         }
+
         if(stringBuilder.length()>0){
+            // sending mail only once match is found
             sendSimpleMail(userEmail,mailSubject, stringBuilder.toString());
         }
         keywordsList.clear();
         stringBuilder.setLength(0);
-    }
-
-    private void updateJobTracker(JSONArray jsonJobsArr){
-        JSONObject jsonObject = (JSONObject) jsonJobsArr.get(0);
-        jobIdTracker = (jobIdTracker != jsonObject.getLong("id")) ? jsonObject.getLong("id") : jobIdTracker;
     }
 
     private void executeJobNotify() {
@@ -119,9 +129,6 @@ public class JobNotifierSchedulerService {
             // Process notifying logic for each entry in the database
             processNotifyForEachUser(jobNotifierEntry,jsonJobsArr);
         }
-        // updating job tracker to keep track of the latest posted job to avoid sending mail again
-        // needs to implement job tracker id within the database for each user for data consistency
-        updateJobTracker(jsonJobsArr);
     }
 
 
@@ -137,12 +144,26 @@ public class JobNotifierSchedulerService {
     }
 
     private void sendSimpleMail(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
-        message.setFrom("random@gmail.com");
-        javaMailSender.send(message);
+        Email from = new Email(mailSender);
+        Email toAddress = new Email(to);
+        Content content = new Content("text/plain", text);
+        Mail mail = new Mail(from, subject, toAddress, content);
+
+        SendGrid sg = new SendGrid(SENDGRID_API_KEY);
+        Request request = new Request();
+        try {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sg.api(request);
+            System.out.println("**********Started Printing Mail Stats***********");
+            System.out.println(response.getStatusCode());
+            System.out.println(response.getBody());
+            System.out.println(response.getHeaders());
+            System.out.println("**********Ended Printing Mail Stats***********");
+        } catch (IOException ex) {
+            System.out.println("error caught");
+        }
     }
 
 }
