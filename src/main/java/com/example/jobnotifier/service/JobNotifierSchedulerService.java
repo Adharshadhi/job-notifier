@@ -85,7 +85,8 @@ public class JobNotifierSchedulerService {
         Map<String,String> jobDetailsMap = new LinkedHashMap<>();
         keywordsListToMatch.stream()
                 .filter(keyword -> jobTitleLowerCase.contains(keyword.toLowerCase()))
-                .forEach(keyword -> {
+                .findFirst()
+                .ifPresent(keyword -> {
                     jobDetailsMap.put("Job Title",jobTitle);
                     jobDetailsMap.put("Company Name",companyName);
                     jobDetailsMap.put("Closing Date",closingDate);
@@ -148,7 +149,8 @@ public class JobNotifierSchedulerService {
         Email toAddress = new Email(to);
         Content content = new Content("text/plain", text);
         Mail mail = new Mail(from, subject, toAddress, content);
-
+//      To prevent grouping of mails as single mail conversation
+        mail.personalization.get(0).addHeader("X-Entity-Ref-ID", "<" + System.currentTimeMillis() + "@jobnotifier.com>");
         SendGrid sg = new SendGrid(SENDGRID_API_KEY);
         Request request = new Request();
         try {
@@ -165,5 +167,7 @@ public class JobNotifierSchedulerService {
             System.out.println("error caught");
         }
     }
+
+
 
 }

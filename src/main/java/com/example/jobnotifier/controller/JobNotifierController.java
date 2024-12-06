@@ -32,7 +32,10 @@ public class JobNotifierController {
                                        @RequestParam("userKeywords") String userKeywords,
                                        RedirectAttributes redirectAttributes
                                        ){
+
+//        check if email id is already registered or not
         JobNotifierEntry jobNotifierEntry = jobNotifierService.checkExistingEntry(userEmail);
+//        check if registered mails are less than the max limit or not
         int currentUsersCount = jobNotifierService.checkEmailCount();
         if((jobNotifierEntry == null) && (currentUsersCount < maxEmailLimit)){
             boolean isSuccess = jobNotifierService.saveJobNotifierEntry(userEmail,userKeywords);
@@ -41,14 +44,21 @@ public class JobNotifierController {
             redirectAttributes.addFlashAttribute("message", message);
         }else{
             redirectAttributes.addFlashAttribute("isSuccess", false);
-            redirectAttributes.addFlashAttribute("message", "Email already registered. Please try with another mail. ");
+            if(jobNotifierEntry != null){
+                redirectAttributes.addFlashAttribute("message", "Email already registered. Please try with another mail. ");
+            } else if (currentUsersCount == maxEmailLimit) {
+                redirectAttributes.addFlashAttribute("message", "Max limit reached for registering new users. Please try again later. ");
+            }
         }
         return "redirect:/";
     }
 
     @PostMapping("/deletejobnotifierentry")
-    public String deleteJobNotifierEntry(@RequestParam("userEmail") String userEmail){
-        jobNotifierService.deleteJobNotifierEntry(userEmail);
+    public String deleteJobNotifierEntry(@RequestParam("userEmail") String userEmail, RedirectAttributes redirectAttributes){
+        boolean isSuccess = jobNotifierService.deleteJobNotifierEntry(userEmail);
+        String message = (isSuccess) ? "Email removed successfully!" : "Failed to remove email. Please try again.";
+        redirectAttributes.addFlashAttribute("isSuccess", isSuccess);
+        redirectAttributes.addFlashAttribute("message", message);
         return "redirect:/";
     }
 

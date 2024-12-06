@@ -36,8 +36,7 @@ public class JobNotifierService {
 
     @Transactional
     public boolean deleteJobNotifierEntry(String userEmail){
-        jobNotifierDao.deleteJobNotifierEntry(userEmail);
-        return true;
+        return jobNotifierDao.deleteJobNotifierEntry(userEmail);
     }
 
     @Transactional

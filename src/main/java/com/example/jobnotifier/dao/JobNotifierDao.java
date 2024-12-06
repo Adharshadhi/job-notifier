@@ -25,10 +25,15 @@ public class JobNotifierDao {
     }
 
     public boolean deleteJobNotifierEntry(String userEmail){
-        JobNotifierEntry jobNotifierEntry = checkExistingEntry(userEmail);
-        if(jobNotifierEntry!=null){
-            entityManager.remove(jobNotifierEntry);
-            return true;
+        try{
+            JobNotifierEntry jobNotifierEntry = checkExistingEntry(userEmail);
+            if(jobNotifierEntry!=null){
+                entityManager.remove(jobNotifierEntry);
+                return true;
+            }
+        }catch (Exception ex){
+            System.out.println("Exception :: Deleting object failed :: " + ex.getMessage());
+            return false;
         }
         return false;
     }
@@ -48,9 +53,7 @@ public class JobNotifierDao {
     }
 
     public int checkEmailCount(){
-        String queryToExecute = "SELECT j FROM JobNotifierEntry j";
-        TypedQuery<JobNotifierEntry> query = entityManager.createQuery(queryToExecute, JobNotifierEntry.class);
-        return query.getResultList().size();
+        return getAllJobNotifierEntry().size();
     }
 
 }
