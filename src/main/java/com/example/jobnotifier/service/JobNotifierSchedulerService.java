@@ -36,6 +36,8 @@ public class JobNotifierSchedulerService {
 
     private final String mailSender;
 
+    private final String appLink;
+
     private final String SENDGRID_API_KEY;
 
     public JobNotifierSchedulerService(@Value("${jobnotify.api.joblistingurl}") String jobListingUrl,
@@ -43,6 +45,7 @@ public class JobNotifierSchedulerService {
                                        JobNotifierDao jobNotifierDao,
                                        @Value("${jobnotify.mail.subject}") String mailSubject,
                                        @Value("${jobnotify.mail.sender}") String mailSender,
+                                       @Value("${jobnotify.mail.applink}") String appLink,
                                        @Value("${SENDGRID_API_KEY}") String SENDGRID_API_KEY)
     {
         this.jobListingUrl = jobListingUrl;
@@ -50,6 +53,7 @@ public class JobNotifierSchedulerService {
         this.jobNotifierDao = jobNotifierDao;
         this.mailSubject = mailSubject;
         this.mailSender = mailSender;
+        this.appLink = appLink;
         this.SENDGRID_API_KEY = SENDGRID_API_KEY;
     }
 
@@ -114,6 +118,7 @@ public class JobNotifierSchedulerService {
 
         if(stringBuilder.length()>0){
             // sending mail only once match is found
+            stringBuilder.append("\n To Unsubscribe, go to => ").append(appLink);
             sendSimpleMail(userEmail,mailSubject, stringBuilder.toString());
         }
         keywordsList.clear();
