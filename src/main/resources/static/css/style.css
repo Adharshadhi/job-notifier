@@ -245,3 +245,32 @@ form input[type="submit"]:hover {
     background-color: #f8d7da;
     color: #721c24;
 }
+
+/*media queries for responsive page*/
+
+/* Styles for devices with a max-width of 480px (e.g., phones) */
+@media (max-width: 768px) {
+    .outerContainer {
+       flex-direction: column;
+    }
+
+    .notifyEnableContainer, .notifyDisableContainer{
+        width: auto;
+    }
+
+    form input[type="email"], form input[type="text"]{
+        width: 300px;
+    }
+
+    footer{
+        margin-top: 15px;
+    }
+
+    #joinBtn, #unSubBtn{
+        font-size: 12px;
+    }
+
+    .hideFooter{
+        display: none;
+    }
+}
